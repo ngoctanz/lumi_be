@@ -1,0 +1,105 @@
+name: lumi
+
+x-backend-environment: &backend_environment
+  LUMI_ENVIRONMENT: production
+  LUMI_MONGODB_URI: ${LUMI_MONGODB_URI:?Set LUMI_MONGODB_URI in .env}
+  LUMI_MONGODB_DATABASE: ${LUMI_MONGODB_DATABASE:-lumi}
+  LUMI_MONGODB_POOL_SIZE: ${LUMI_MONGODB_POOL_SIZE:-10}
+  LUMI_CDN_HOSTS: ${LUMI_CDN_HOSTS:-[]}
+  LUMI_CORS_ORIGINS: ${LUMI_CORS_ORIGINS:?Set LUMI_CORS_ORIGINS in .env}
+  LUMI_REGISTRATION_ENABLED: ${LUMI_REGISTRATION_ENABLED:-true}
+  LUMI_SESSION_TTL_SECONDS: ${LUMI_SESSION_TTL_SECONDS:-604800}
+  LUMI_PAIRING_TTL_SECONDS: ${LUMI_PAIRING_TTL_SECONDS:-300}
+  LUMI_REQUEST_MAX_BYTES: ${LUMI_REQUEST_MAX_BYTES:-16384}
+
+x-backend: &backend
+  image: ${LUMI_IMAGE:-lumi-be:local}
+  build:
+    context: .
+  environment: *backend_environment
+  networks: [backend]
+  init: true
+  read_only: true
+  tmpfs:
+    - /tmp:size=16m,mode=1777
+  security_opt:
+    - no-new-privileges:true
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+  restart: unless-stopped
+
+services:
+  init:
+    <<: *backend
+    command: ["python", "-m", "lumi_be.cli", "init-db"]
+    restart: "no"
+
+  api:
+    <<: *backend
+    command:
+      - uvicorn
+      - lumi_be.app:create_app
+      - --factory
+      - --host=0.0.0.0
+      - --port=8000
+      - --proxy-headers
+      - "--forwarded-allow-ips=*"
+    expose: ["8000"]
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=3)"
+      interval: 20s
+      timeout: 5s
+      start_period: 15s
+      retries: 6
+
+  worker:
+    <<: *backend
+    command: ["python", "-m", "lumi_be.worker"]
+    depends_on:
+      api:
+        condition: service_healthy
+    stop_grace_period: 15s
+
+  caddy:
+    image: caddy:2-alpine
+    environment:
+      LUMI_DOMAIN: ${LUMI_DOMAIN:?Set LUMI_DOMAIN in .env}
+      ACME_EMAIL: ${ACME_EMAIL:?Set ACME_EMAIL in .env}
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+      - "${HTTPS_PORT:-443}:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [backend]
+    depends_on:
+      api:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    restart: unless-stopped
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:
