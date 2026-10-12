@@ -57,7 +57,7 @@ services:
     expose: ["8000"]
     ports:
       # Loopback-only origin for the host-network Cloudflare Tunnel connector.
-      - "127.0.0.1:${LUMI_TUNNEL_PORT:-18083}:8000"
+      - "127.0.0.1:${LUMI_TUNNEL_PORT:-18082}:8000"
     depends_on:
       init:
         condition: service_completed_successfully

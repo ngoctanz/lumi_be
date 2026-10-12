@@ -6,8 +6,8 @@ param(
 $ErrorActionPreference = "Stop"
 $ApiBase = "https://api.cloudflare.com/client/v4"
 $TunnelId = "b2bfd33b-b75c-4e94-9f08-b75f8b0c54ca"
-$Hostname = "lumi.ngoctanz.dev"
-$Origin = "http://localhost:18083"
+$Hostname = "api.fdoc.app"
+$Origin = "http://localhost:18082"
 
 function Invoke-Cloudflare {
     param(

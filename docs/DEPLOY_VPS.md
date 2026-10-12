@@ -9,10 +9,10 @@ Stack production gồm bốn service:
 
 MongoDB dùng Atlas bên ngoài. VPS không mở cổng database.
 
-Service API còn bind loopback `127.0.0.1:18083` cho Cloudflare Tunnel chạy bằng
+Service API còn bind loopback `127.0.0.1:18082` cho Cloudflare Tunnel chạy bằng
 `network_mode=host`. Port này không public ra Internet; đổi bằng `LUMI_TUNNEL_PORT`.
-Với tunnel hiện tại, chạy `tools\cloudflare-tunnel-route.bat [ACCOUNT_ID]` trên
-Windows để giữ route cũ và thêm `lumi.ngoctanz.dev -> http://localhost:18083`.
+Với tunnel hiện tại, `api.fdoc.app` trỏ tới `http://localhost:18082`. Chạy
+`tools\cloudflare-tunnel-route.bat [ACCOUNT_ID]` trên Windows nếu cần khôi phục route.
 Token cần Cloudflare Tunnel Write. DNS của hostname phải là CNAME tới tunnel UUID
 được script in ra, thay cho A record trỏ thẳng vào VPS.
 
