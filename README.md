@@ -86,7 +86,8 @@ dịch vụ công khai. Chưa tích hợp cloud client/pairing screen vào firmw
 | App | `PUT .../{id}/config`, `/layout`, `/widgets/{type}` | Cấu hình theo revision |
 | App | `GET /api/v1/widget-sources`, `GET .../{id}/widgets` | Catalog và binding |
 | App | `POST .../{id}/navigation` | Full HLP snapshot, TTL 3s |
-| App | `GET .../{id}/assets` | Catalog ảnh được phép |
+| App | `GET`, `POST .../{id}/assets` | Catalog/upload ảnh |
+| App | `DELETE .../{id}/assets/{asset_id}` | Xóa ảnh Cloudinary của user |
 | Mạch | `POST /api/v1/device/hello`, `/pairing` | Heartbeat/ghép |
 | Mạch | `GET /api/v1/device/snapshot` | JSON <=512 byte |
 | Mạch | `GET /api/v1/device/widgets/{type}` | Cache chuẩn hóa <=512 byte, ETag/304 |
@@ -106,11 +107,16 @@ Weather đã dùng Open-Meteo; clock/calendar local; navigation API riêng; stoc
 chưa có upstream thật. Worker cache weather một giờ, stale tối đa 24 giờ, lỗi giữ
 last-good cache. Một scheduler instance; không chạy worker trong từng API process.
 
-Ảnh binary nằm ở cloud/CDN, MongoDB chỉ giữ metadata và quyền chọn.
-Ảnh `rgb565-le` 320×240, đúng 153,600 byte; SHA-256. CLI `publish-asset`
-kiểm tra file thật; chỉ chấp nhận HTTPS host trong `LUMI_CDN_HOSTS`.
-Catalog asset riêng tư không bảo vệ file CDN: cần signed URL/origin auth khi làm
-ảnh private. URL CDN/khóa provider không phải URI MongoDB.
+Ảnh binary nằm ở Cloudinary/CDN, MongoDB chỉ giữ metadata và quyền chọn.
+App upload PNG/JPEG/WebP tối đa 5 MiB bằng multipart field `file` + `name`.
+Backend giải mã và crop giữa thành 320×240, lưu preview WebP gọn cho app và bản
+`rgb565-le` đúng 153.600 byte cho firmware; SHA-256 luôn tính trên bản firmware.
+Mặc định mỗi user giữ tối đa 50 ảnh và upload tối đa 10 ảnh/giờ. Ảnh đang được
+chọn trên thiết bị phải được bỏ chọn trước khi xóa. CLI `publish-asset` vẫn dành
+cho file RGB565/CDN quản lý bên ngoài và kiểm tra host trong `LUMI_CDN_HOSTS`.
+URL Cloudinary hiện là public nhưng public ID chứa UUID khó đoán; quyền liệt kê,
+chọn và xóa vẫn kiểm tra owner. Khi cần ảnh bí mật thực sự phải chuyển sang signed
+delivery. API secret chỉ đặt trong env backend, không đưa vào app/firmware/Git.
 
 OTA vẫn `app-assisted`; app đọc manifest trực tiếp từ GitHub Releases. Backend không
 lưu metadata firmware và không tham gia build, publish hay kiểm tra update.

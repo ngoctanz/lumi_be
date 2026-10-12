@@ -101,6 +101,15 @@ def asset_view(asset):
     }
 
 
+def asset_app_view(asset):
+    return {
+        **asset_view(asset),
+        "preview_url": asset.preview_url,
+        "provider": asset.provider,
+        "created_at": asset.created_at,
+    }
+
+
 def validate_cdn(url: str, settings):
     parsed = urlparse(url)
     if (

@@ -35,10 +35,15 @@ LUMI_DOMAIN=api.example.com
 ACME_EMAIL=admin@example.com
 LUMI_MONGODB_URI=mongodb+srv://...
 LUMI_CORS_ORIGINS=["https://app.example.com","https://localhost","capacitor://localhost"]
+LUMI_CLOUDINARY_CLOUD_NAME=hiuauphb
+LUMI_CLOUDINARY_API_KEY=554889889541598
+LUMI_CLOUDINARY_API_SECRET=<copy từ Cloudinary Console>
 ```
 
 `LUMI_DOMAIN` chỉ là hostname, không có `https://` hoặc path. URI Atlas chứa password
 phải ở `.env`, không commit Git. Nếu password có ký tự đặc biệt, percent-encode nó.
+Cloudinary API secret cũng chỉ nằm trong `.env` trên VPS; cloud name và API key không
+đủ quyền upload nếu thiếu secret. Có thể đổi `LUMI_CLOUDINARY_FOLDER` để tách môi trường.
 
 ## 3. Deploy
 

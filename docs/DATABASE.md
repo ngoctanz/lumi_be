@@ -8,7 +8,7 @@
 | login_sessions | hash token, user_id, expires_at, expire_at | user_id; TTL expire_at |
 | devices | UUID, serial, hash khóa, owner, revision, config/layout/widgets/nav | serial/token unique; pairing unique partial; owner + ID |
 | provider_cache | canonical key, source_id, normalized payload, updated_at, expire_at | `_id` unique; TTL expire_at |
-| assets | owner/model/name/HTTPS URL/hash/size | model + owner + ID |
+| assets | owner/model/name/raw URL/preview URL/hash/Cloudinary IDs | model + owner + ID; provider ID unique partial |
 | rate_limits | scope-window hash, hits, expire_at | `_id` unique; TTL expire_at |
 | metadata | schema version marker | `_id` |
 

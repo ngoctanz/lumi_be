@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from pymongo import ASCENDING, MongoClient
 from pymongo.errors import CollectionInvalid
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 def utc_date(seconds):
@@ -67,7 +67,20 @@ def initialize(db):
                 },
             },
         },
-        "assets": {"required": ["_id", "model", "url", "sha256", "size"]},
+        "assets": {
+            "required": ["_id", "model", "url", "sha256", "size"],
+            "properties": {
+                "owner_id": {"bsonType": ["string", "null"]},
+                "model": {"bsonType": "string"},
+                "url": {"bsonType": "string"},
+                "sha256": {"bsonType": "string"},
+                "size": {"bsonType": ["int", "long"]},
+                "provider": {"bsonType": "string"},
+                "provider_id": {"bsonType": ["string", "null"]},
+                "preview_url": {"bsonType": ["string", "null"]},
+                "preview_provider_id": {"bsonType": ["string", "null"]},
+            },
+        },
         "provider_cache": {
             "required": ["_id", "source_id", "payload", "updated_at", "expire_at"],
             "properties": {"payload": {"bsonType": "object"}, "expire_at": {"bsonType": "date"}},
@@ -101,6 +114,12 @@ def initialize(db):
     db.devices.create_index([("owner_id", ASCENDING), ("_id", ASCENDING)], name="ix_devices_owner")
     db.assets.create_index(
         [("model", ASCENDING), ("owner_id", ASCENDING), ("_id", ASCENDING)], name="ix_assets_scope"
+    )
+    db.assets.create_index(
+        "provider_id",
+        unique=True,
+        name="uq_asset_provider_id",
+        partialFilterExpression={"provider_id": {"$type": "string"}},
     )
     db.provider_cache.create_index("expire_at", expireAfterSeconds=0, name="ttl_provider_cache")
     db.rate_limits.create_index("expire_at", expireAfterSeconds=0, name="ttl_rate_limits")

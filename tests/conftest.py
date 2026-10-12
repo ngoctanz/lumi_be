@@ -21,6 +21,9 @@ def app():
             mongodb_uri=os.getenv("LUMI_TEST_MONGODB_URI", "mongodb://127.0.0.1:27018"),
             mongodb_database=name,
             cdn_hosts=["cdn.example.test"],
+            cloudinary_cloud_name=None,
+            cloudinary_api_key=None,
+            cloudinary_api_secret=None,
         )
     )
     initialize(app.state.db)

@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pymongo.errors import PyMongoError
 
+from .cloud_images import CloudinaryImageStore
 from .config import Settings
 from .db import database
 from .db import ready as database_ready
@@ -16,12 +17,23 @@ from .routers import app_devices, auth, device, widgets
 class BoundedBody:
     """Reject oversized/chunked bodies before Pydantic reads them into memory."""
 
-    def __init__(self, app, maximum):
-        self.app, self.maximum = app, maximum
+    def __init__(self, app, maximum, image_maximum):
+        self.app, self.maximum, self.image_maximum = app, maximum, image_maximum
+
+    def maximum_for(self, scope):
+        parts = scope.get("path", "").strip("/").split("/")
+        is_image_upload = (
+            scope.get("method") == "POST"
+            and len(parts) == 6
+            and parts[:4] == ["api", "v1", "me", "devices"]
+            and parts[5] == "assets"
+        )
+        return self.image_maximum + 65536 if is_image_upload else self.maximum
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
             return await self.app(scope, receive, send)
+        maximum = self.maximum_for(scope)
         chunks = []
         length = 0
         while True:
@@ -30,7 +42,7 @@ class BoundedBody:
                 return
             chunk = event.get("body", b"")
             length += len(chunk)
-            if length > self.maximum:
+            if length > maximum:
                 response = error(Request(scope), 413, "body_too_large", "Request body exceeds the API limit")
                 return await response(scope, receive, send)
             chunks.append(chunk)
@@ -42,7 +54,7 @@ class BoundedBody:
         async def bounded_receive():
             nonlocal delivered
             if delivered:
-                return await receive()
+                return {"type": "http.request", "body": b"", "more_body": False}
             delivered = True
             return {"type": "http.request", "body": body, "more_body": False}
 
@@ -65,7 +77,12 @@ def create_app(settings: Settings | None = None):
         description="Versioned, account-isolated API. Devices authenticate with their own credentials.",
     )
     app.state.settings, app.state.mongo_client, app.state.db = settings, client, db
-    app.add_middleware(BoundedBody, maximum=settings.request_max_bytes)
+    app.state.image_store = CloudinaryImageStore(settings)
+    app.add_middleware(
+        BoundedBody,
+        maximum=settings.request_max_bytes,
+        image_maximum=settings.image_upload_max_bytes,
+    )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,

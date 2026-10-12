@@ -54,6 +54,12 @@ class Asset(Document):
     width: int = 320
     height: int = 240
     encoding: str = "rgb565-le"
+    provider: str = "external"
+    provider_id: str | None = None
+    preview_url: str | None = None
+    preview_provider_id: str | None = None
+    source_format: str | None = None
+    created_at: int = 0
 
 
 class ProviderCache(BaseModel):
