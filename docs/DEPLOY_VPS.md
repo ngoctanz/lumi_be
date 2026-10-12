@@ -11,6 +11,10 @@ MongoDB dùng Atlas bên ngoài. VPS không mở cổng database.
 
 Service API còn bind loopback `127.0.0.1:18083` cho Cloudflare Tunnel chạy bằng
 `network_mode=host`. Port này không public ra Internet; đổi bằng `LUMI_TUNNEL_PORT`.
+Với tunnel hiện tại, chạy `tools\cloudflare-tunnel-route.bat [ACCOUNT_ID]` trên
+Windows để giữ route cũ và thêm `lumi.ngoctanz.dev -> http://localhost:18083`.
+Token cần Cloudflare Tunnel Write. DNS của hostname phải là CNAME tới tunnel UUID
+được script in ra, thay cho A record trỏ thẳng vào VPS.
 
 ## 1. Chuẩn bị DNS, firewall và Atlas
 
