@@ -17,6 +17,11 @@ MongoDB dùng Atlas bên ngoài. VPS không mở cổng database.
 4. Database user chỉ cần `readWrite` trên database `lumi`.
 5. Cài Docker Engine cùng Docker Compose plugin theo tài liệu chính thức của Docker.
 
+Nếu DNS dùng Cloudflare cho `fdoc.app`, trên Windows có thể chạy
+`tools\cloudflare-dns.bat <IP_PUBLIC_VPS>`. Script hỏi API Token ở chế độ ẩn rồi
+tạo hoặc cập nhật `lumi.fdoc.app` ở chế độ DNS only. Token cần quyền Zone Read và
+DNS Edit trên zone `fdoc.app`; token không được ghi vào file hoặc Git.
+
 ## 2. Chuẩn bị source và env
 
 Copy/clone project vào VPS, ví dụ `/opt/lumi-be`, rồi:
