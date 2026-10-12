@@ -22,6 +22,7 @@ x-backend: &backend
   image: ${LUMI_IMAGE:-lumi-be:local}
   build:
     context: .
+  pull_policy: build
   environment: *backend_environment
   networks: [backend]
   init: true
