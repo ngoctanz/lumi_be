@@ -127,7 +127,8 @@ Docker Compose production dùng MongoDB Atlas ngoài và gồm init, API, worker
 Caddy là service duy nhất mở cổng 80/443 và tự quản lý HTTPS; API port 8000 chỉ tồn
 tại trong Docker network. Copy `.env.production.example` thành `.env`, điền domain,
 Atlas URI, CORS origins rồi chạy `sh deploy.sh`. Hướng dẫn DNS, firewall, Atlas,
-update và rollback nằm tại `docs/DEPLOY_VPS.md`.
+update và rollback nằm tại `docs/DEPLOY_VPS.md`. Pipeline test/deploy qua GitHub
+Actions được hướng dẫn từ đầu tại `docs/CICD.md`.
 
 ```powershell
 $env:LUMI_TEST_MONGODB_URI="mongodb://127.0.0.1:27018"

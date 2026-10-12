@@ -1,0 +1,89 @@
+name: Backend CI/CD
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ping:1}).ok'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      LUMI_TEST_MONGODB_URI: mongodb://127.0.0.1:27017/?directConnection=true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -c requirements.lock -e ".[dev]"
+      - name: Lint and format
+        run: |
+          python -m ruff format --check src tests tools
+          python -m ruff check src tests tools
+          python -m pip check
+      - name: Test against MongoDB
+        run: python -m pytest -q
+      - name: Verify OpenAPI is current
+        run: |
+          python tools/export_openapi.py
+          git diff --exit-code -- docs/openapi.json
+      - name: Validate production Compose
+        run: docker compose --env-file .env.production.example config --quiet
+      - name: Build production image
+        run: docker build --pull --tag lumi-be:ci .
+
+  deploy:
+    if: >-
+      vars.VPS_DEPLOY_ENABLED == 'true' &&
+      (github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main'))
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    concurrency:
+      group: lumi-production
+      cancel-in-progress: false
+    env:
+      VPS_HOST: ${{ secrets.VPS_SSH_HOST }}
+      VPS_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_PORT: ${{ vars.VPS_SSH_PORT || '22' }}
+    steps:
+      - name: Configure pinned SSH host and deploy key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          test -n "$VPS_HOST" && test -n "$VPS_USER"
+          test -n "$SSH_PRIVATE_KEY" && test -n "$SSH_KNOWN_HOSTS"
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+      - name: Deploy tested main on VPS
+        run: >-
+          ssh -o BatchMode=yes -o IdentitiesOnly=yes
+          -i ~/.ssh/id_ed25519 -p "$VPS_PORT"
+          "$VPS_USER@$VPS_HOST"
+          'cd /opt/lumi-be && git checkout main && git pull --ff-only origin main && sh deploy.sh'
