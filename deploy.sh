@@ -9,7 +9,7 @@ if [ ! -f .env ]; then
 fi
 
 docker compose config --quiet
-docker compose build --pull api
+docker compose build api
 docker compose up -d --remove-orphans
 
 attempt=0
