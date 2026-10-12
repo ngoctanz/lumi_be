@@ -33,7 +33,26 @@ function Invoke-Cloudflare {
         $arguments.Body = $Body | ConvertTo-Json -Compress
     }
 
-    $response = Invoke-RestMethod @arguments
+    try {
+        $response = Invoke-RestMethod @arguments
+    }
+    catch {
+        $status = if ($_.Exception.Response) { [int] $_.Exception.Response.StatusCode } else { "network" }
+        $message = $_.Exception.Message
+        if ($_.ErrorDetails.Message) {
+            try {
+                $errorBody = $_.ErrorDetails.Message | ConvertFrom-Json
+                $apiMessages = @($errorBody.errors | ForEach-Object { "[$($_.code)] $($_.message)" })
+                if ($apiMessages.Count -gt 0) {
+                    $message = $apiMessages -join "; "
+                }
+            }
+            catch {
+                # Keep the original HTTP message when the response is not JSON.
+            }
+        }
+        throw "Cloudflare API failed ($status): $message"
+    }
     if (-not $response.success) {
         $messages = ($response.errors | ForEach-Object { $_.message }) -join "; "
         throw "Cloudflare API rejected the request: $messages"
@@ -59,9 +78,6 @@ if ([string]::IsNullOrWhiteSpace($script:ApiToken)) {
 }
 
 try {
-    Write-Host "Checking Cloudflare token..."
-    Invoke-Cloudflare -Method GET -Path "/user/tokens/verify" | Out-Null
-
     if (-not $ZoneId) {
         Write-Host "Finding zone $RootDomain..."
         $encodedDomain = [Uri]::EscapeDataString($RootDomain)
@@ -70,6 +86,9 @@ try {
             throw "Khong tim thay zone active $RootDomain. Token can Zone Read cho domain nay."
         }
         $ZoneId = $zones.result[0].id
+    }
+    elseif ($ZoneId -notmatch "^[a-fA-F0-9]{32}$") {
+        throw "Zone ID phai gom dung 32 ky tu hex."
     }
 
     $encodedRecord = [Uri]::EscapeDataString($RecordName)
@@ -111,7 +130,7 @@ try {
     Write-Host "nslookup $RecordName"
 }
 catch {
-    Write-Error $_.Exception.Message
+    [Console]::Error.WriteLine($_.Exception.Message)
     exit 1
 }
 finally {

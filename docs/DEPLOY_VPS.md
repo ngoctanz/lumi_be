@@ -18,9 +18,10 @@ MongoDB dùng Atlas bên ngoài. VPS không mở cổng database.
 5. Cài Docker Engine cùng Docker Compose plugin theo tài liệu chính thức của Docker.
 
 Nếu DNS dùng Cloudflare cho `fdoc.app`, trên Windows có thể chạy
-`tools\cloudflare-dns.bat <IP_PUBLIC_VPS>`. Script hỏi API Token ở chế độ ẩn rồi
-tạo hoặc cập nhật `lumi.fdoc.app` ở chế độ DNS only. Token cần quyền Zone Read và
-DNS Edit trên zone `fdoc.app`; token không được ghi vào file hoặc Git.
+`tools\cloudflare-dns.bat <IP_PUBLIC_VPS> [ZONE_ID]`. Script hỏi API Token ở chế độ
+ẩn rồi tạo hoặc cập nhật `lumi.fdoc.app` ở chế độ DNS only. Khi truyền Zone ID, token
+chỉ cần DNS Edit; nếu để script tự tìm zone thì token cần thêm Zone Read. Token không
+được ghi vào file hoặc Git.
 
 ## 2. Chuẩn bị source và env
 
