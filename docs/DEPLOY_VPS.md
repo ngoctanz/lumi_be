@@ -9,6 +9,9 @@ Stack production gồm bốn service:
 
 MongoDB dùng Atlas bên ngoài. VPS không mở cổng database.
 
+Service API còn bind loopback `127.0.0.1:18083` cho Cloudflare Tunnel chạy bằng
+`network_mode=host`. Port này không public ra Internet; đổi bằng `LUMI_TUNNEL_PORT`.
+
 ## 1. Chuẩn bị DNS, firewall và Atlas
 
 1. Tạo bản ghi DNS `A` cho domain API trỏ tới IPv4 của VPS.
