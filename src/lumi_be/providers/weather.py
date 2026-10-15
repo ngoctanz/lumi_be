@@ -57,9 +57,3 @@ def fetch_weather(latitude, longitude, transport=None):
     if any(not isinstance(v, (float, int)) or isinstance(v, bool) or not math.isfinite(v) for v in values):
         raise ValueError("Invalid weather measurements")
     return Weather(**dict(zip(["temp", "feels", "hi", "lo", "hum", "wind"], map(round, values))), c=condition)
-
-
-def refresh(sessions):
-    from .widgets import refresh as refresh_widgets
-
-    return refresh_widgets(sessions)

@@ -76,10 +76,10 @@ class CloudinaryImageStore:
 
         return cloudinary.uploader
 
-    def upload(self, user_id: str, asset_id: str, image: PreparedImage) -> StoredImage:
+    def upload(self, namespace: str, asset_id: str, image: PreparedImage) -> StoredImage:
         if not self.enabled:
             raise CloudImageError("Cloudinary is not configured")
-        base = f"{self.folder}/users/{user_id}/assets/{asset_id}"
+        base = f"{self.folder}/{namespace}/assets/{asset_id}"
         preview_id = f"{base}/preview"
         raw_id = f"{base}/firmware.rgb565"
         uploader = self._uploader()

@@ -27,5 +27,5 @@ until [ "$attempt" -ge 45 ]; do
 done
 
 echo "API did not become healthy. Recent logs:" >&2
-docker compose logs --tail=100 api init worker caddy >&2
+docker compose logs --tail=100 api init caddy >&2
 exit 1

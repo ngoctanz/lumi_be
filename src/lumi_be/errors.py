@@ -12,6 +12,8 @@ def error(request: Request, status: int, code: str, message: str, headers=None):
         body = {"v": 1, "t": "err", "code": code, "request_id": request_id}
     else:
         body = {"error": {"code": code, "message": message, "request_id": request_id}}
+    if status == 429 and headers and "Retry-After" in headers:
+        body["retry_seconds"] = max(1, min(3600, int(headers["Retry-After"])))
     return JSONResponse(body, status_code=status, headers=headers)
 
 

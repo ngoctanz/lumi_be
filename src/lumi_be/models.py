@@ -17,33 +17,6 @@ class Document(BaseModel):
         return self.model_dump(by_alias=True)
 
 
-class User(Document):
-    email: str
-    password_hash: str
-    created_at: int
-
-
-class Device(Document):
-    serial: str
-    token_hash: str
-    model: str = "WazeHUD-CYD"
-    enabled: bool = True
-    owner_id: str | None = None
-    pairing_hash: str | None = None
-    pairing_expires_at: int = 0
-    revision: int = 1
-    config: dict = Field(default_factory=dict)
-    layout: dict | None = None
-    widgets: dict = Field(default_factory=dict)
-    navigation: dict | None = None
-    navigation_at_ms: int = 0
-    firmware: str = "unknown"
-    firmware_build: int = 0
-    last_seen: int = 0
-    applied_revision: int = 0
-    created_at: int
-
-
 class Asset(Document):
     owner_id: str | None = None
     model: str

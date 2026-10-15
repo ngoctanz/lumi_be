@@ -7,9 +7,6 @@ x-backend-environment: &backend_environment
   LUMI_MONGODB_POOL_SIZE: ${LUMI_MONGODB_POOL_SIZE:-10}
   LUMI_CDN_HOSTS: ${LUMI_CDN_HOSTS:-[]}
   LUMI_CORS_ORIGINS: ${LUMI_CORS_ORIGINS:?Set LUMI_CORS_ORIGINS in .env}
-  LUMI_REGISTRATION_ENABLED: ${LUMI_REGISTRATION_ENABLED:-true}
-  LUMI_SESSION_TTL_SECONDS: ${LUMI_SESSION_TTL_SECONDS:-604800}
-  LUMI_PAIRING_TTL_SECONDS: ${LUMI_PAIRING_TTL_SECONDS:-300}
   LUMI_REQUEST_MAX_BYTES: ${LUMI_REQUEST_MAX_BYTES:-16384}
   LUMI_IMAGE_UPLOAD_MAX_BYTES: ${LUMI_IMAGE_UPLOAD_MAX_BYTES:-5242880}
   LUMI_IMAGE_ASSET_LIMIT: ${LUMI_IMAGE_ASSET_LIMIT:-50}
@@ -17,6 +14,9 @@ x-backend-environment: &backend_environment
   LUMI_CLOUDINARY_API_KEY: ${LUMI_CLOUDINARY_API_KEY:-}
   LUMI_CLOUDINARY_API_SECRET: ${LUMI_CLOUDINARY_API_SECRET:-}
   LUMI_CLOUDINARY_FOLDER: ${LUMI_CLOUDINARY_FOLDER:-lumi}
+  LUMI_GITHUB_FIRMWARE_REPOSITORY: ${LUMI_GITHUB_FIRMWARE_REPOSITORY:-ngoctanz/lumi_espcore}
+  LUMI_GITHUB_API_TOKEN: ${LUMI_GITHUB_API_TOKEN:-}
+  LUMI_GITHUB_RELEASE_CACHE_SECONDS: ${LUMI_GITHUB_RELEASE_CACHE_SECONDS:-300}
 
 x-backend: &backend
   image: ${LUMI_IMAGE:-lumi-be:local}
@@ -52,6 +52,7 @@ services:
       - --factory
       - --host=0.0.0.0
       - --port=8000
+      - --no-access-log
       - --proxy-headers
       - "--forwarded-allow-ips=*"
     expose: ["8000"]
@@ -71,14 +72,6 @@ services:
       timeout: 5s
       start_period: 15s
       retries: 6
-
-  worker:
-    <<: *backend
-    command: ["python", "-m", "lumi_be.worker"]
-    depends_on:
-      api:
-        condition: service_healthy
-    stop_grace_period: 15s
 
   caddy:
     image: caddy:2-alpine

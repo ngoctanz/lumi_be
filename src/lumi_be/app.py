@@ -11,7 +11,8 @@ from .config import Settings
 from .db import database
 from .db import ready as database_ready
 from .errors import error, install_errors
-from .routers import app_devices, auth, device, widgets
+from .firmware_releases import GithubFirmwareCatalog
+from .routers import public_data, releases
 
 
 class BoundedBody:
@@ -32,6 +33,8 @@ class BoundedBody:
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
+            return await self.app(scope, receive, send)
+        if scope.get("method") in {"GET", "HEAD", "OPTIONS"}:
             return await self.app(scope, receive, send)
         maximum = self.maximum_for(scope)
         chunks = []
@@ -65,19 +68,23 @@ def create_app(settings: Settings | None = None):
     settings = settings or Settings()
     client, db = database(settings)
 
+    firmware_catalog = GithubFirmwareCatalog(settings)
+
     @asynccontextmanager
     async def lifespan(_):
         yield
+        firmware_catalog.close()
         client.close()
 
     app = FastAPI(
         title="Lumi Cloud",
         version="0.1.0",
         lifespan=lifespan,
-        description="Versioned, account-isolated API. Devices authenticate with their own credentials.",
+        description="Public, bounded widget data and firmware catalogue. Device settings stay local.",
     )
     app.state.settings, app.state.mongo_client, app.state.db = settings, client, db
     app.state.image_store = CloudinaryImageStore(settings)
+    app.state.firmware_catalog = firmware_catalog
     app.add_middleware(
         BoundedBody,
         maximum=settings.request_max_bytes,
@@ -122,8 +129,6 @@ def create_app(settings: Settings | None = None):
             )
         return {"status": "ready"}
 
-    app.include_router(auth.router)
-    app.include_router(app_devices.router)
-    app.include_router(device.router)
-    app.include_router(widgets.router)
+    app.include_router(releases.router)
+    app.include_router(public_data.router)
     return app

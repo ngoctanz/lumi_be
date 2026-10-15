@@ -10,9 +10,6 @@ class Settings(BaseSettings):
     environment: str = "development"
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:5173", "https://localhost"])
     cdn_hosts: list[str] = Field(default_factory=list)
-    registration_enabled: bool = True
-    session_ttl_seconds: int = Field(default=604800, ge=300, le=2592000)
-    pairing_ttl_seconds: int = Field(default=300, ge=30, le=600)
     request_max_bytes: int = Field(default=16384, ge=4096, le=65536)
     image_upload_max_bytes: int = Field(default=5242880, ge=262144, le=10485760)
     image_asset_limit: int = Field(default=50, ge=1, le=500)
@@ -20,13 +17,18 @@ class Settings(BaseSettings):
     cloudinary_api_key: str | None = None
     cloudinary_api_secret: SecretStr | None = None
     cloudinary_folder: str = Field(default="lumi", pattern=r"^[A-Za-z0-9_/-]{1,80}$")
+    github_firmware_repository: str = Field(
+        default="ngoctanz/lumi_espcore", pattern=r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+    )
+    github_api_token: SecretStr | None = None
+    github_release_cache_seconds: int = Field(default=300, ge=30, le=3600)
 
     @field_validator("cloudinary_cloud_name", "cloudinary_api_key", mode="before")
     @classmethod
     def empty_cloudinary_value(cls, value):
         return value or None
 
-    @field_validator("cloudinary_api_secret", mode="before")
+    @field_validator("cloudinary_api_secret", "github_api_token", mode="before")
     @classmethod
     def empty_cloudinary_secret(cls, value):
         return value or None
