@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Lumi Cloud",
-    "description": "Versioned, account-isolated API. Devices authenticate with their own credentials.",
+    "description": "Public, bounded widget data and firmware catalogue. Device settings stay local.",
     "version": "0.1.0"
   },
   "paths": {
@@ -44,772 +44,49 @@
         }
       }
     },
-    "/api/v1/auth/register": {
-      "post": {
-        "tags": [
-          "Accounts"
-        ],
-        "summary": "Register",
-        "operationId": "register_api_v1_auth_register_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Credentials"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/auth/login": {
-      "post": {
-        "tags": [
-          "Accounts"
-        ],
-        "summary": "Login",
-        "operationId": "login_api_v1_auth_login_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Credentials"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/auth/me": {
+    "/api/v1/firmware/releases/latest": {
       "get": {
         "tags": [
-          "Accounts"
+          "Firmware releases"
         ],
-        "summary": "Me",
-        "operationId": "me_api_v1_auth_me_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/api/v1/auth/logout": {
-      "post": {
-        "tags": [
-          "Accounts"
-        ],
-        "summary": "Logout",
-        "operationId": "logout_api_v1_auth_logout_post",
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/api/v1/auth/logout-all": {
-      "post": {
-        "tags": [
-          "Accounts"
-        ],
-        "summary": "Logout All",
-        "operationId": "logout_all_api_v1_auth_logout_all_post",
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/api/v1/me/devices": {
-      "get": {
-        "tags": [
-          "Companion cloud control"
-        ],
-        "summary": "Devices",
-        "operationId": "devices_api_v1_me_devices_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
+        "summary": "Latest Release",
+        "operationId": "latest_release_api_v1_firmware_releases_latest_get",
         "parameters": [
           {
-            "name": "offset",
+            "name": "model",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 48,
+              "title": "Model"
+            }
+          },
+          {
+            "name": "channel",
             "in": "query",
             "required": false,
             "schema": {
-              "type": "integer",
-              "default": 0,
-              "title": "Offset"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/me/devices/claim": {
-      "post": {
-        "tags": [
-          "Companion cloud control"
-        ],
-        "summary": "Claim",
-        "operationId": "claim_api_v1_me_devices_claim_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Claim"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/api/v1/me/devices/{device_id}": {
-      "get": {
-        "tags": [
-          "Companion cloud control"
-        ],
-        "summary": "Details",
-        "operationId": "details_api_v1_me_devices__device_id__get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "device_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Device Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Companion cloud control"
-        ],
-        "summary": "Unbind",
-        "operationId": "unbind_api_v1_me_devices__device_id__delete",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "device_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Device Id"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/me/devices/{device_id}/config": {
-      "put": {
-        "tags": [
-          "Companion cloud control"
-        ],
-        "summary": "Set Config",
-        "operationId": "set_config_api_v1_me_devices__device_id__config_put",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "device_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Device Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ConfigWrite"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/me/devices/{device_id}/layout": {
-      "put": {
-        "tags": [
-          "Companion cloud control"
-        ],
-        "summary": "Set Layout",
-        "operationId": "set_layout_api_v1_me_devices__device_id__layout_put",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "device_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Device Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LayoutWrite"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/me/devices/{device_id}/navigation": {
-      "post": {
-        "tags": [
-          "Companion cloud control"
-        ],
-        "summary": "Navigation",
-        "operationId": "navigation_api_v1_me_devices__device_id__navigation_post",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "device_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Device Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Navigation"
-              }
-            }
-          }
-        },
-        "responses": {
-          "202": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/me/devices/{device_id}/assets": {
-      "get": {
-        "tags": [
-          "Companion cloud control"
-        ],
-        "summary": "Assets",
-        "operationId": "assets_api_v1_me_devices__device_id__assets_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "device_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Device Id"
-            }
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "default": 0,
-              "title": "Offset"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Companion cloud control"
-        ],
-        "summary": "Upload Asset",
-        "operationId": "upload_asset_api_v1_me_devices__device_id__assets_post",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "device_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Device Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "$ref": "#/components/schemas/Body_upload_asset_api_v1_me_devices__device_id__assets_post"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/me/devices/{device_id}/assets/{asset_id}": {
-      "delete": {
-        "tags": [
-          "Companion cloud control"
-        ],
-        "summary": "Delete Asset",
-        "operationId": "delete_asset_api_v1_me_devices__device_id__assets__asset_id__delete",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "device_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Device Id"
-            }
-          },
-          {
-            "name": "asset_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Asset Id"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/device/hello": {
-      "post": {
-        "tags": [
-          "Firmware HTTP v1"
-        ],
-        "summary": "Hello",
-        "description": "Call at boot and every 60s; no caller-supplied device ID is accepted.",
-        "operationId": "hello_api_v1_device_hello_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DeviceHello"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/api/v1/device/pairing": {
-      "post": {
-        "tags": [
-          "Firmware HTTP v1"
-        ],
-        "summary": "Pairing",
-        "description": "Firmware must call only after a local physical pairing action.",
-        "operationId": "pairing_api_v1_device_pairing_post",
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/api/v1/device/snapshot": {
-      "get": {
-        "tags": [
-          "Firmware HTTP v1"
-        ],
-        "summary": "Snapshot",
-        "description": "Bounded full snapshot. Large layouts/assets are separate resources.",
-        "operationId": "snapshot_api_v1_device_snapshot_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/api/v1/device/layout": {
-      "get": {
-        "tags": [
-          "Firmware HTTP v1"
-        ],
-        "summary": "Layout",
-        "operationId": "layout_api_v1_device_layout_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "if-none-match",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
+              "enum": [
+                "stable",
+                "beta"
               ],
-              "title": "If-None-Match"
+              "type": "string",
+              "default": "stable",
+              "title": "Channel"
+            }
+          },
+          {
+            "name": "current_build",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 0,
+              "default": 0,
+              "title": "Current Build"
             }
           }
         ],
@@ -835,50 +112,20 @@
         }
       }
     },
-    "/api/v1/device/navigation": {
+    "/api/v1/firmware/releases/assets/{asset_id}": {
       "get": {
         "tags": [
-          "Firmware HTTP v1"
+          "Firmware releases"
         ],
-        "summary": "Navigation",
-        "operationId": "navigation_api_v1_device_navigation_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/api/v1/device/assets/{asset_id}": {
-      "get": {
-        "tags": [
-          "Firmware HTTP v1"
-        ],
-        "summary": "Asset",
-        "operationId": "asset_api_v1_device_assets__asset_id__get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
+        "summary": "Download Release Asset",
+        "operationId": "download_release_asset_api_v1_firmware_releases_assets__asset_id__get",
         "parameters": [
           {
             "name": "asset_id",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid",
+              "type": "integer",
               "title": "Asset Id"
             }
           }
@@ -908,190 +155,106 @@
     "/api/v1/widget-sources": {
       "get": {
         "tags": [
-          "Widget sources v1"
+          "Public data v1"
         ],
-        "summary": "Catalog",
-        "operationId": "catalog_api_v1_widget_sources_get",
+        "summary": "Sources",
+        "operationId": "sources_api_v1_widget_sources_get",
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {}
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/api/v1/me/devices/{device_id}/widgets": {
-      "get": {
-        "tags": [
-          "Widget sources v1"
-        ],
-        "summary": "Bindings",
-        "operationId": "bindings_api_v1_me_devices__device_id__widgets_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "device_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Device Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
               }
             }
           }
         }
       }
     },
-    "/api/v1/me/devices/{device_id}/widgets/{widget_type}": {
-      "put": {
-        "tags": [
-          "Widget sources v1"
-        ],
-        "summary": "Set Binding",
-        "operationId": "set_binding_api_v1_me_devices__device_id__widgets__widget_type__put",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "device_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Device Id"
-            }
-          },
-          {
-            "name": "widget_type",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "enum": [
-                "clock",
-                "weather",
-                "calendar",
-                "bot",
-                "navigation",
-                "stock"
-              ],
-              "type": "string",
-              "title": "Widget Type"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BindingWrite"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/device/widgets/{widget_type}": {
+    "/api/v1/widgets/weather": {
       "get": {
         "tags": [
-          "Widget sources v1"
+          "Public data v1"
         ],
-        "summary": "Widget Data",
-        "operationId": "widget_data_api_v1_device_widgets__widget_type__get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
+        "summary": "Weather",
+        "operationId": "weather_api_v1_widgets_weather_get",
         "parameters": [
           {
-            "name": "widget_type",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "enum": [
-                "clock",
-                "weather",
-                "calendar",
-                "bot",
-                "navigation",
-                "stock"
-              ],
-              "type": "string",
-              "title": "Widget Type"
-            }
-          },
-          {
-            "name": "if-none-match",
-            "in": "header",
+            "name": "latitude",
+            "in": "query",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
+              "type": "number",
+              "maximum": 90,
+              "minimum": -90,
+              "default": 16.0544,
+              "title": "Latitude"
+            }
+          },
+          {
+            "name": "longitude",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 180,
+              "minimum": -180,
+              "default": 108.2022,
+              "title": "Longitude"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
-              ],
-              "title": "If-None-Match"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assets": {
+      "get": {
+        "tags": [
+          "Public data v1"
+        ],
+        "summary": "Assets",
+        "operationId": "assets_api_v1_assets_get",
+        "parameters": [
+          {
+            "name": "model",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "const": "WazeHUD-CYD",
+              "type": "string",
+              "default": "WazeHUD-CYD",
+              "title": "Model"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
             }
           }
         ],
@@ -1120,262 +283,6 @@
   },
   "components": {
     "schemas": {
-      "Alert": {
-        "properties": {
-          "k": {
-            "type": "integer",
-            "maximum": 255.0,
-            "minimum": 0.0,
-            "title": "K"
-          },
-          "d": {
-            "type": "integer",
-            "maximum": 1000000.0,
-            "minimum": -1.0,
-            "title": "D"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "k",
-          "d"
-        ],
-        "title": "Alert"
-      },
-      "BindingWrite": {
-        "properties": {
-          "expected_revision": {
-            "type": "integer",
-            "maximum": 2147483647.0,
-            "minimum": 1.0,
-            "title": "Expected Revision"
-          },
-          "source_id": {
-            "type": "string",
-            "maxLength": 48,
-            "minLength": 1,
-            "title": "Source Id"
-          },
-          "params": {
-            "additionalProperties": true,
-            "type": "object",
-            "maxProperties": 8,
-            "title": "Params"
-          },
-          "enabled": {
-            "type": "boolean",
-            "title": "Enabled",
-            "default": true
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "expected_revision",
-          "source_id"
-        ],
-        "title": "BindingWrite"
-      },
-      "Body_upload_asset_api_v1_me_devices__device_id__assets_post": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "maxLength": 64,
-            "minLength": 1,
-            "title": "Name"
-          },
-          "file": {
-            "type": "string",
-            "contentMediaType": "application/octet-stream",
-            "title": "File"
-          }
-        },
-        "type": "object",
-        "required": [
-          "name",
-          "file"
-        ],
-        "title": "Body_upload_asset_api_v1_me_devices__device_id__assets_post"
-      },
-      "Claim": {
-        "properties": {
-          "device_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Device Id"
-          },
-          "code": {
-            "type": "string",
-            "pattern": "^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{10}$",
-            "title": "Code"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "device_id",
-          "code"
-        ],
-        "title": "Claim"
-      },
-      "ConfigWrite": {
-        "properties": {
-          "expected_revision": {
-            "type": "integer",
-            "maximum": 2147483647.0,
-            "minimum": 1.0,
-            "title": "Expected Revision"
-          },
-          "config": {
-            "$ref": "#/components/schemas/DeviceConfig"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "expected_revision",
-          "config"
-        ],
-        "title": "ConfigWrite"
-      },
-      "Credentials": {
-        "properties": {
-          "email": {
-            "type": "string",
-            "maxLength": 254,
-            "minLength": 3,
-            "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
-            "title": "Email"
-          },
-          "password": {
-            "type": "string",
-            "maxLength": 128,
-            "minLength": 12,
-            "title": "Password"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "email",
-          "password"
-        ],
-        "title": "Credentials"
-      },
-      "DeviceConfig": {
-        "properties": {
-          "brightness": {
-            "type": "integer",
-            "multipleOf": 5.0,
-            "maximum": 100.0,
-            "minimum": 10.0,
-            "title": "Brightness",
-            "default": 70
-          },
-          "show_eta": {
-            "type": "boolean",
-            "title": "Show Eta",
-            "default": true
-          },
-          "show_alerts": {
-            "type": "boolean",
-            "title": "Show Alerts",
-            "default": true
-          },
-          "theme": {
-            "type": "string",
-            "enum": [
-              "auto",
-              "day",
-              "night"
-            ],
-            "title": "Theme",
-            "default": "auto"
-          },
-          "wallpaper": {
-            "type": "string",
-            "enum": [
-              "none",
-              "sunset",
-              "garden",
-              "coast",
-              "moon"
-            ],
-            "title": "Wallpaper",
-            "default": "sunset"
-          },
-          "asset_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Asset Id"
-          },
-          "channel": {
-            "type": "string",
-            "enum": [
-              "stable",
-              "beta"
-            ],
-            "title": "Channel",
-            "default": "stable"
-          },
-          "latitude": {
-            "type": "number",
-            "maximum": 90.0,
-            "minimum": -90.0,
-            "title": "Latitude",
-            "default": 16.0544
-          },
-          "longitude": {
-            "type": "number",
-            "maximum": 180.0,
-            "minimum": -180.0,
-            "title": "Longitude",
-            "default": 108.2022
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "title": "DeviceConfig"
-      },
-      "DeviceHello": {
-        "properties": {
-          "firmware": {
-            "type": "string",
-            "maxLength": 31,
-            "minLength": 1,
-            "pattern": "^[\\x20-\\x7e]+$",
-            "title": "Firmware"
-          },
-          "build": {
-            "type": "integer",
-            "maximum": 2147483647.0,
-            "minimum": 0.0,
-            "title": "Build"
-          },
-          "applied_revision": {
-            "type": "integer",
-            "maximum": 2147483647.0,
-            "minimum": 0.0,
-            "title": "Applied Revision",
-            "default": 0
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "firmware",
-          "build"
-        ],
-        "title": "DeviceHello"
-      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1388,222 +295,6 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
-      },
-      "Layout": {
-        "properties": {
-          "version": {
-            "type": "integer",
-            "const": 1,
-            "title": "Version",
-            "default": 1
-          },
-          "widgets": {
-            "items": {
-              "$ref": "#/components/schemas/Widget"
-            },
-            "type": "array",
-            "maxItems": 6,
-            "minItems": 1,
-            "title": "Widgets"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "widgets"
-        ],
-        "title": "Layout"
-      },
-      "LayoutWrite": {
-        "properties": {
-          "expected_revision": {
-            "type": "integer",
-            "maximum": 2147483647.0,
-            "minimum": 1.0,
-            "title": "Expected Revision"
-          },
-          "layout": {
-            "$ref": "#/components/schemas/Layout"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "expected_revision",
-          "layout"
-        ],
-        "title": "LayoutWrite"
-      },
-      "Navigation": {
-        "properties": {
-          "v": {
-            "type": "integer",
-            "const": 1,
-            "title": "V",
-            "default": 1
-          },
-          "t": {
-            "type": "string",
-            "const": "s",
-            "title": "T",
-            "default": "s"
-          },
-          "nav": {
-            "type": "integer",
-            "maximum": 1.0,
-            "minimum": 0.0,
-            "title": "Nav",
-            "default": 0
-          },
-          "spd": {
-            "type": "integer",
-            "maximum": 400.0,
-            "minimum": 0.0,
-            "title": "Spd",
-            "default": 0
-          },
-          "lim": {
-            "type": "integer",
-            "maximum": 400.0,
-            "minimum": 0.0,
-            "title": "Lim",
-            "default": 0
-          },
-          "over": {
-            "type": "integer",
-            "maximum": 1.0,
-            "minimum": 0.0,
-            "title": "Over",
-            "default": 0
-          },
-          "trn": {
-            "type": "integer",
-            "maximum": 255.0,
-            "minimum": 0.0,
-            "title": "Trn",
-            "default": 0
-          },
-          "trn2": {
-            "type": "integer",
-            "maximum": 255.0,
-            "minimum": 0.0,
-            "title": "Trn2",
-            "default": 0
-          },
-          "dst": {
-            "type": "integer",
-            "maximum": 1000000.0,
-            "minimum": -1.0,
-            "title": "Dst",
-            "default": -1
-          },
-          "st": {
-            "type": "string",
-            "maxLength": 40,
-            "title": "St",
-            "default": ""
-          },
-          "st2": {
-            "type": "string",
-            "maxLength": 40,
-            "title": "St2",
-            "default": ""
-          },
-          "eta": {
-            "type": "string",
-            "maxLength": 8,
-            "title": "Eta",
-            "default": ""
-          },
-          "rmin": {
-            "type": "integer",
-            "maximum": 100000.0,
-            "minimum": 0.0,
-            "title": "Rmin",
-            "default": 0
-          },
-          "rm": {
-            "type": "integer",
-            "maximum": 10000000.0,
-            "minimum": 0.0,
-            "title": "Rm",
-            "default": 0
-          },
-          "rkm": {
-            "type": "number",
-            "maximum": 100000.0,
-            "minimum": 0.0,
-            "title": "Rkm",
-            "default": 0
-          },
-          "avg": {
-            "type": "integer",
-            "maximum": 1.0,
-            "minimum": 0.0,
-            "title": "Avg",
-            "default": 0
-          },
-          "avgL": {
-            "type": "integer",
-            "maximum": 1000000.0,
-            "minimum": 0.0,
-            "title": "Avgl",
-            "default": 0
-          },
-          "avgR": {
-            "type": "integer",
-            "maximum": 400.0,
-            "minimum": 0.0,
-            "title": "Avgr",
-            "default": 0
-          },
-          "avgP": {
-            "type": "integer",
-            "maximum": 100.0,
-            "minimum": 0.0,
-            "title": "Avgp",
-            "default": 0
-          },
-          "alr": {
-            "type": "integer",
-            "maximum": 255.0,
-            "minimum": 0.0,
-            "title": "Alr",
-            "default": 0
-          },
-          "alrD": {
-            "type": "integer",
-            "maximum": 1000000.0,
-            "minimum": -1.0,
-            "title": "Alrd",
-            "default": -1
-          },
-          "alrV": {
-            "type": "integer",
-            "maximum": 400.0,
-            "minimum": 0.0,
-            "title": "Alrv",
-            "default": 0
-          },
-          "alrs": {
-            "items": {
-              "$ref": "#/components/schemas/Alert"
-            },
-            "type": "array",
-            "maxItems": 4,
-            "title": "Alrs"
-          },
-          "ts": {
-            "type": "integer",
-            "maximum": 4294967295.0,
-            "minimum": 0.0,
-            "title": "Ts",
-            "default": 0
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "title": "Navigation"
       },
       "ValidationError": {
         "properties": {
@@ -1644,75 +335,6 @@
           "type"
         ],
         "title": "ValidationError"
-      },
-      "Widget": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "maxLength": 23,
-            "minLength": 1,
-            "pattern": "^[A-Za-z0-9_-]+$",
-            "title": "Id"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "clock",
-              "weather",
-              "calendar",
-              "bot",
-              "navigation",
-              "stock"
-            ],
-            "title": "Type"
-          },
-          "x": {
-            "type": "integer",
-            "maximum": 319.0,
-            "minimum": 0.0,
-            "title": "X"
-          },
-          "y": {
-            "type": "integer",
-            "maximum": 239.0,
-            "minimum": 0.0,
-            "title": "Y"
-          },
-          "width": {
-            "type": "integer",
-            "maximum": 320.0,
-            "minimum": 1.0,
-            "title": "Width"
-          },
-          "height": {
-            "type": "integer",
-            "maximum": 240.0,
-            "minimum": 1.0,
-            "title": "Height"
-          },
-          "visible": {
-            "type": "boolean",
-            "title": "Visible",
-            "default": true
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "id",
-          "type",
-          "x",
-          "y",
-          "width",
-          "height"
-        ],
-        "title": "Widget"
-      }
-    },
-    "securitySchemes": {
-      "HTTPBearer": {
-        "type": "http",
-        "scheme": "bearer"
       }
     }
   }

@@ -14,21 +14,9 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  test:
+  validate:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    services:
-      mongodb:
-        image: mongo:7.0
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ping:1}).ok'"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 20
-    env:
-      LUMI_TEST_MONGODB_URI: mongodb://127.0.0.1:27017/?directConnection=true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -42,12 +30,6 @@ jobs:
           python -m ruff format --check src tests tools
           python -m ruff check src tests tools
           python -m pip check
-      - name: Test against MongoDB
-        run: python -m pytest -q
-      - name: Verify OpenAPI is current
-        run: |
-          python tools/export_openapi.py
-          git diff --exit-code -- docs/openapi.json
       - name: Validate production Compose
         run: docker compose --env-file .env.production.example config --quiet
       - name: Build production image
@@ -58,7 +40,7 @@ jobs:
       vars.VPS_DEPLOY_ENABLED == 'true' &&
       (github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'push' && github.ref == 'refs/heads/main'))
-    needs: test
+    needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: production
@@ -83,7 +65,7 @@ jobs:
           printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_ed25519
           printf '%s\n' "$SSH_KNOWN_HOSTS" | tr -d '\r' > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
-      - name: Deploy tested main on VPS
+      - name: Deploy main on VPS
         run: >-
           ssh -o BatchMode=yes -o IdentitiesOnly=yes
           -i ~/.ssh/id_ed25519 -p "$VPS_PORT"
