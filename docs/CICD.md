@@ -120,3 +120,20 @@ SSH vào VPS, checkout commit tốt đã biết rồi chạy `sh deploy.sh`, sau
 
 Đổi `.env` là thao tác production thủ công: sửa file trên VPS rồi chạy `sh deploy.sh`.
 File này không bị `git pull` ghi đè vì đã Git-ignore.
+
+
+### Host key verification failed
+
+The production secret `VPS_KNOWN_HOSTS` must match the exact SSH address in
+`VPS_SSH_HOST`. For 43.134.60.222 on port 22, run this through the VPS provider
+console or an already verified SSH session:
+
+```sh
+awk '{print "43.134.60.222 " $1 " " $2}' /etc/ssh/ssh_host_ed25519_key.pub
+```
+
+Paste the complete output line (`43.134.60.222 ssh-ed25519 AAAA...`) into
+`VPS_KNOWN_HOSTS`. For another port use `[43.134.60.222]:PORT` as the first field.
+This is the server host public key, not a user login key or authorized_keys.
+Verify changed host keys through the VPS console before replacing this secret.
+The workflow keeps strict verification and checks for a matching address first.

@@ -65,9 +65,16 @@ jobs:
           printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_ed25519
           printf '%s\n' "$SSH_KNOWN_HOSTS" | tr -d '\r' > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+          host_lookup="$VPS_HOST"
+          if [ "$VPS_PORT" != "22" ]; then host_lookup="[$VPS_HOST]:$VPS_PORT"; fi
+          ssh-keygen -F "$host_lookup" -f ~/.ssh/known_hosts >/dev/null || {
+            echo "::error::VPS_KNOWN_HOSTS has no entry matching VPS_SSH_HOST and VPS_SSH_PORT. Copy the verified server host public key using the configured SSH address." >&2
+            exit 1
+          }
       - name: Deploy main on VPS
         run: >-
           ssh -o BatchMode=yes -o IdentitiesOnly=yes
+          -o StrictHostKeyChecking=yes -o UserKnownHostsFile=~/.ssh/known_hosts
           -i ~/.ssh/id_ed25519 -p "$VPS_PORT"
           "$VPS_USER@$VPS_HOST"
           'cd /opt/lumi-be && git checkout main && git pull --ff-only origin main && sh deploy.sh'
